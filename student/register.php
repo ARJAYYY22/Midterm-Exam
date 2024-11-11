@@ -1,6 +1,15 @@
 <?php
 session_start();
 
+header("Cache-Control: no-cache, no-store, must-revalidate");
+header("Pragma: no-cache");
+header("Expires: 0");
+
+if (!isset($_SESSION['user_email'])) {
+    header("Location: index.php");
+    exit;
+}
+
 if (!isset($_SESSION['students'])) {
     $_SESSION['students'] = [];
 }
@@ -43,6 +52,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['studentId'])) {
     registerStudent($studentData);
 }
 
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['deleteId'])) {
+    $deleteId = $_POST['deleteId'];
+    $_SESSION['students'] = array_filter($_SESSION['students'], function($student) use ($deleteId) {
+        return $student['id'] !== $deleteId;
+    });
+    header("Location: " . $_SERVER['PHP_SELF']);
+    exit;
+}
+
 ?>
 
 <!DOCTYPE html>
@@ -52,10 +70,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['studentId'])) {
     <title>Register a New Student</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
     <style>
-        body { background-color: #f8f9fa; }
-        .breadcrumb { background-color: #e9ecef; }
+        body { background-color: #7CFC00; }
+        .breadcrumb { background-color: #F5FFFA; }
         .card { margin-top: 20px; }
-        .card-header { background-color: #f8f9fa; }
+        .card-header { background-color: #F5FFFA; }
         .table { margin-top: 20px; }
     </style>
 </head>
@@ -69,7 +87,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['studentId'])) {
             </ol>
         </nav>
 
-        <!-- Alert Message -->
         <?php if (!empty($message)): ?>
             <div class="alert <?php echo (strpos($message, 'successfully') !== false) ? 'alert-info' : 'alert-danger'; ?> alert-dismissible fade show" role="alert">
                 <?php echo $message; ?>
@@ -77,28 +94,26 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['studentId'])) {
             </div>
         <?php endif; ?>
 
-        <!-- Registration Form -->
         <div class="card">
             <div class="card-body">
                 <form action="" method="POST">
                     <div class="mb-3">
                         <label for="studentId" class="form-label">Student ID</label>
-                        <input type="text" class="form-control" id="studentId" name="studentId" placeholder="Enter Student ID">
+                        <input type="text" class="form-control" id="studentId" name="studentId" placeholder="Enter Student ID" required>
                     </div>
                     <div class="mb-3">
                         <label for="firstName" class="form-label">First Name</label>
-                        <input type="text" class="form-control" id="firstName" name="firstName" placeholder="Enter First Name">
+                        <input type="text" class="form-control" id="firstName" name="firstName" placeholder="Enter First Name" required>
                     </div>
                     <div class="mb-3">
                         <label for="lastName" class="form-label">Last Name</label>
-                        <input type="text" class="form-control" id="lastName" name="lastName" placeholder="Enter Last Name">
+                        <input type="text" class="form-control" id="lastName" name="lastName" placeholder="Enter Last Name" required>
                     </div>
                     <button type="submit" class="btn btn-primary">Add Student</button>
                 </form>
             </div>
         </div>
 
-        <!-- Student List -->
         <div class="card">
             <div class="card-header">Student List</div>
             <div class="card-body">
@@ -108,7 +123,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['studentId'])) {
                             <th scope="col">Student ID</th>
                             <th scope="col">First Name</th>
                             <th scope="col">Last Name</th>
-                            <th scope="col">Option</th>
+                            <th scope="col">Options</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -119,9 +134,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['studentId'])) {
                                     <td><?php echo $student['first_name']; ?></td>
                                     <td><?php echo $student['last_name']; ?></td>
                                     <td>
-                                        <form action="" method="POST" style="display:inline;">
-                                            <!-- <input type="hidden" name="deleteId" value="<?php echo $student['id']; ?>"> -->
-                                            <button type="submit" class="btn btn-success btn-sm">Edit</button> <button type="submit" class="btn btn-danger btn-sm">Delete</button>
+                                        <form action="edit.php" method="GET" style="display:inline;">
+                                            <button type="submit" class="btn btn-success btn-sm" name="studentId" value="<?php echo $student['id']; ?>">Edit</button>
+                                        </form>
+                                        <form action="delete.php" method="GET" class="d-inline">
+                                            <input type="hidden" name="studentId" value="<?php echo $student['id']; ?>">   
+                                            <button type="submit" class="btn btn-danger btn-sm">Delete</button>
                                         </form>
                                     </td>
                                 </tr>
@@ -136,18 +154,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['studentId'])) {
             </div>
         </div>
     </div>
-
-    <?php
-    // Handle student deletion
-    if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['deleteId'])) {
-        $deleteId = $_POST['deleteId'];
-        $_SESSION['students'] = array_filter($_SESSION['students'], function($student) use ($deleteId) {
-            return $student['id'] !== $deleteId;
-        });
-        header("Location: " . $_SERVER['PHP_SELF']); // Refresh page to clear POST data
-        exit;
-    }
-    ?>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
 </body>
