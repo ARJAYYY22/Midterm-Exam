@@ -6,11 +6,11 @@ if (session_status() == PHP_SESSION_NONE) {
 
 // Example users for validation (replace this with actual database logic in production)
 $users = [
-    "Arjay22@gmail.com"=> "password1",
-    "Arjay21@gmail.com" => "password2",
-    "Arjay23@gmail.com" => "password3",
-    "Arjay24@gmail.com" => "password4",
-    "Arjay25@gmail.com" => "password5"
+    "Arjay22@gmail.com"=> "Qwerty123",
+    "Arjay21@gmail.com" => "Qwerty123",
+    "Arjay23@gmail.com" => "Qwerty123",
+    "Arjay24@gmail.com" => "Qwerty123",
+    "Arjay25@gmail.com" => "Qwerty123"
 ];
 
 // Function to validate login credentials
